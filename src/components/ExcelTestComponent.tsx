@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { DataTable } from "./data-table";
+import { columns } from "./columns";
 import type { Employee } from "../types/employee";
 
 interface ExcelParseResult {
@@ -19,13 +21,13 @@ export function ExcelTestComponent() {
       const filePath = await window.excelAPI.selectExcelFile();
       setSelectedFile(filePath);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to select file");
+      setError(err instanceof Error ? err.message : "Gagal memilih file");
     }
   };
 
   const handleParseExcel = async () => {
     if (!selectedFile) {
-      setError("Please select an Excel file first");
+      setError("Mohon pilih file Excel terlebih dahulu");
       return;
     }
 
@@ -43,10 +45,8 @@ export function ExcelTestComponent() {
         )}`
       );
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to parse Excel file"
-      );
-      console.error("Excel parsing error:", err);
+      setError(err instanceof Error ? err.message : "Gagal parsing file Excel");
+      console.error("Error parsing Excel:", err);
     } finally {
       setIsLoading(false);
     }
@@ -55,86 +55,75 @@ export function ExcelTestComponent() {
   const handleClearCache = async () => {
     try {
       await window.excelAPI.clearCache();
-      console.log("Cache cleared successfully");
+      console.log("Cache berhasil dibersihkan");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to clear cache");
+      setError(err instanceof Error ? err.message : "Gagal membersihkan cache");
     }
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <h2 className="text-2xl font-bold">Excel Parser Test</h2>
+    <div className="p-6 space-y-6 max-w-full">
+      <div className="flex flex-col space-y-4">
+        <h2 className="text-2xl font-bold">Parser Data Pegawai Excel</h2>
 
-      <div className="space-y-2">
-        <Button onClick={handleSelectFile} className="mr-2">
-          Select Excel File
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <Button onClick={handleSelectFile} className="w-full sm:w-auto">
+            Pilih File Excel
+          </Button>
+
+          <Button
+            onClick={handleParseExcel}
+            disabled={!selectedFile || isLoading}
+            className="w-full sm:w-auto"
+          >
+            {isLoading ? "Memproses..." : "Proses Excel"}
+          </Button>
+
+          <Button
+            onClick={handleClearCache}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            Hapus Cache
+          </Button>
+        </div>
+
         {selectedFile && (
-          <p className="text-sm text-gray-600">
-            Selected: {selectedFile.split(/[/\\]/).pop()}
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded p-3">
+            <p className="text-blue-700 text-sm">
+              <strong>File terpilih:</strong>{" "}
+              {selectedFile.split(/[/\\]/).pop()}
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-3">
+            <p className="text-red-700">Error: {error}</p>
+          </div>
         )}
       </div>
 
-      <div className="space-x-2">
-        <Button
-          onClick={handleParseExcel}
-          disabled={!selectedFile || isLoading}
-          className="mr-2"
-        >
-          {isLoading ? "Parsing..." : "Parse Excel"}
-        </Button>
+      {employees.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">
+              Data Pegawai ({employees.length} total)
+            </h3>
+            <div className="text-sm text-gray-500">
+              Terakhir diperbarui: {new Date().toLocaleString()}
+            </div>
+          </div>
 
-        <Button onClick={handleClearCache} variant="outline">
-          Clear Cache
-        </Button>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3">
-          <p className="text-red-700">Error: {error}</p>
+          <DataTable columns={columns} data={employees} />
         </div>
       )}
 
-      {employees.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">
-            Parsed Employees ({employees.length} total)
-          </h3>
-
-          <div className="max-h-96 overflow-auto border rounded p-4 bg-gray-50">
-            <div className="space-y-2">
-              {employees.slice(0, 10).map((employee, index) => (
-                <div key={index} className="bg-white p-3 rounded border">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <strong>Nama:</strong> {employee.nama}
-                    </div>
-                    <div>
-                      <strong>NIP:</strong> {employee.nip}
-                    </div>
-                    <div>
-                      <strong>Jabatan:</strong> {employee.jabatan}
-                    </div>
-                    <div>
-                      <strong>SKPD:</strong> {employee.skpd_sekarang}
-                    </div>
-                    <div>
-                      <strong>Tempat Lahir:</strong> {employee.tempat_lahir}
-                    </div>
-                    <div>
-                      <strong>Tanggal Lahir:</strong>{" "}
-                      {employee.tanggal_lahir.toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {employees.length > 10 && (
-                <div className="text-center py-2 text-gray-500">
-                  ... and {employees.length - 10} more employees
-                </div>
-              )}
-            </div>
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-gray-600">Memproses file Excel...</p>
           </div>
         </div>
       )}

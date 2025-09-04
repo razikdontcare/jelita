@@ -15,6 +15,7 @@ const getCachePaths = () => {
   return {
     CACHE_BIN: join(dataDir, "employees.bin"),
     META_PATH: join(dataDir, "employees.meta.json"),
+    EXCEL_COPY: join(dataDir, "employees.xlsx"),
   };
 };
 
@@ -25,6 +26,21 @@ async function ensureDataDir() {
     await fs.access(dataDir);
   } catch {
     await fs.mkdir(dataDir, { recursive: true });
+  }
+}
+
+// Copy Excel file to data directory
+async function copyExcelToDataDir(sourcePath: string): Promise<string> {
+  await ensureDataDir();
+  const { EXCEL_COPY } = getCachePaths();
+
+  try {
+    await fs.copyFile(sourcePath, EXCEL_COPY);
+    console.log(`Excel file copied to: ${EXCEL_COPY}`);
+    return EXCEL_COPY;
+  } catch (error) {
+    console.error("Error copying Excel file:", error);
+    throw error;
   }
 }
 
@@ -141,7 +157,21 @@ export async function parseExcel(excelPath: string): Promise<Employee[]> {
   }
 }
 
-export async function getParsedData(excelPath: string) {
+export async function processAndSaveExcel(
+  sourcePath: string
+): Promise<{ data: Employee[]; lastModified: number }> {
+  await ensureDataDir();
+
+  // Copy the Excel file to our data directory
+  const savedExcelPath = await copyExcelToDataDir(sourcePath);
+
+  // Parse and cache the data
+  const result = await getParsedDataFromPath(savedExcelPath);
+
+  return result;
+}
+
+async function getParsedDataFromPath(excelPath: string) {
   await ensureDataDir();
 
   let excelMtime = 0;
@@ -211,10 +241,57 @@ export async function getParsedData(excelPath: string) {
   return { data, lastModified: excelMtime };
 }
 
+// Get cached data if available (for auto-loading on app start)
+export async function getCachedData(): Promise<{
+  data: Employee[];
+  lastModified: number;
+} | null> {
+  await ensureDataDir();
+  const { CACHE_BIN, META_PATH, EXCEL_COPY } = getCachePaths();
+
+  try {
+    // Check if we have cached data and the Excel file
+    await fs.access(CACHE_BIN);
+    await fs.access(META_PATH);
+    await fs.access(EXCEL_COPY);
+
+    const metaRaw = await fs.readFile(META_PATH, "utf-8");
+    const meta = JSON.parse(metaRaw);
+
+    const cacheRaw = await fs.readFile(CACHE_BIN, "utf-8");
+    const data = JSON.parse(cacheRaw) as Employee[];
+
+    // Convert date strings back to Date objects
+    const parsedData = data.map((employee) => ({
+      ...employee,
+      tmt_pensiun: new Date(employee.tmt_pensiun),
+      tanggal_lahir: new Date(employee.tanggal_lahir),
+      a_tmt: new Date(employee.a_tmt),
+      j_tmt: new Date(employee.j_tmt),
+      tmt_pertama_jab_struk: employee.tmt_pertama_jab_struk
+        ? new Date(employee.tmt_pertama_jab_struk)
+        : null,
+      tgl_mutasi: employee.tgl_mutasi ? new Date(employee.tgl_mutasi) : null,
+      tmt_pindah_masuk: employee.tmt_pindah_masuk
+        ? new Date(employee.tmt_pindah_masuk)
+        : null,
+    }));
+
+    return { data: parsedData, lastModified: meta.mtimeMs };
+  } catch {
+    return null;
+  }
+}
+
+// Get parsed data from external file (for new uploads)
+export async function getParsedData(excelPath: string) {
+  return await processAndSaveExcel(excelPath);
+}
+
 // Clear cache function
 export async function clearCache() {
   await ensureDataDir();
-  const { CACHE_BIN, META_PATH } = getCachePaths();
+  const { CACHE_BIN, META_PATH, EXCEL_COPY } = getCachePaths();
 
   try {
     await fs.unlink(CACHE_BIN);
@@ -227,8 +304,13 @@ export async function clearCache() {
   } catch {
     // File doesn't exist, that's fine
   }
-}
 
+  try {
+    await fs.unlink(EXCEL_COPY);
+  } catch {
+    // File doesn't exist, that's fine
+  }
+}
 export interface ParseResult {
   data: Employee[];
   lastModified: number;

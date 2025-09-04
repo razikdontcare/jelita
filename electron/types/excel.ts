@@ -8,6 +8,7 @@ export interface ExcelParseResult {
 export interface ExcelAPI {
   parseExcel: (filePath: string) => Promise<Employee[]>;
   getParsedData: (filePath: string) => Promise<ExcelParseResult>;
+  getCachedData: () => Promise<ExcelParseResult | null>;
   clearCache: () => Promise<void>;
   selectExcelFile: () => Promise<string | null>;
 }
@@ -16,6 +17,7 @@ export interface ExcelAPI {
 export const IPC_CHANNELS = {
   EXCEL_PARSE: "excel:parse",
   EXCEL_GET_PARSED_DATA: "excel:getParsedData",
+  EXCEL_GET_CACHED_DATA: "excel:getCachedData",
   EXCEL_CLEAR_CACHE: "excel:clearCache",
   EXCEL_SELECT_FILE: "excel:selectFile",
 } as const;

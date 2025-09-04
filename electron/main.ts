@@ -2,8 +2,16 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 // import { createRequire } from 'node:module'
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { parseExcel, getParsedData, clearCache } from "./services/excelParser";
+import {
+  parseExcel,
+  getParsedData,
+  clearCache,
+  getCachedData,
+} from "./services/excelParser";
+import { LeaveDataStorage } from "./services/leaveDataStorage";
+import { ExcelExportService } from "./services/excelExportService";
 import { IPC_CHANNELS } from "./types/excel";
+import type { EmployeeLeaveData } from "../src/types/employee";
 
 // const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -73,7 +81,7 @@ function registerIpcHandlers() {
       try {
         return await getParsedData(filePath);
       } catch (error) {
-        console.error("Error getting parsed data:", error);
+        console.error("Error mendapatkan data terparsing:", error);
         throw error;
       }
     }
@@ -84,8 +92,18 @@ function registerIpcHandlers() {
     try {
       await clearCache();
     } catch (error) {
-      console.error("Error clearing cache:", error);
+      console.error("Error membersihkan cache:", error);
       throw error;
+    }
+  });
+
+  // Get cached data (for auto-loading)
+  ipcMain.handle(IPC_CHANNELS.EXCEL_GET_CACHED_DATA, async () => {
+    try {
+      return await getCachedData();
+    } catch (error) {
+      console.error("Error mendapatkan data cache:", error);
+      return null;
     }
   });
 
@@ -95,8 +113,8 @@ function registerIpcHandlers() {
       const result = await dialog.showOpenDialog(win!, {
         properties: ["openFile"],
         filters: [
-          { name: "Excel Files", extensions: ["xlsx", "xls"] },
-          { name: "All Files", extensions: ["*"] },
+          { name: "File Excel", extensions: ["xlsx", "xls"] },
+          { name: "Semua File", extensions: ["*"] },
         ],
       });
 
@@ -106,7 +124,71 @@ function registerIpcHandlers() {
 
       return result.filePaths[0];
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.error("Error memilih file:", error);
+      throw error;
+    }
+  });
+
+  // Leave Data Storage handlers
+  const leaveStorage = LeaveDataStorage.getInstance();
+
+  // Save leave data
+  ipcMain.handle("leave-data:save", async (_, leaveData: EmployeeLeaveData) => {
+    try {
+      return await leaveStorage.saveLeaveData(leaveData);
+    } catch (error) {
+      console.error("Error saving leave data:", error);
+      throw error;
+    }
+  });
+
+  // Get all leave data
+  ipcMain.handle("leave-data:getAll", async () => {
+    try {
+      return await leaveStorage.getLeaveData();
+    } catch (error) {
+      console.error("Error getting leave data:", error);
+      throw error;
+    }
+  });
+
+  // Get leave data by NIP
+  ipcMain.handle("leave-data:getByNip", async (_, nip: string) => {
+    try {
+      return await leaveStorage.getLeaveDataByNip(nip);
+    } catch (error) {
+      console.error("Error mendapatkan data cuti berdasarkan NIP:", error);
+      throw error;
+    }
+  });
+
+  // Delete leave data by number
+  ipcMain.handle("leave-data:delete", async (_, no: number) => {
+    try {
+      return await leaveStorage.deleteLeaveData(no);
+    } catch (error) {
+      console.error("Error menghapus data cuti:", error);
+      throw error;
+    }
+  });
+
+  // Clear all leave data
+  ipcMain.handle("leave-data:clear", async () => {
+    try {
+      return await leaveStorage.clearAllData();
+    } catch (error) {
+      console.error("Error membersihkan data cuti:", error);
+      throw error;
+    }
+  });
+
+  // Export leave data to Excel
+  const exportService = ExcelExportService.getInstance();
+  ipcMain.handle("leave-data:export", async (_, data: EmployeeLeaveData[]) => {
+    try {
+      return await exportService.exportToExcel(data);
+    } catch (error) {
+      console.error("Error mengekspor data cuti:", error);
       throw error;
     }
   });
