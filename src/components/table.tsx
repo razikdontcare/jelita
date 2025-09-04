@@ -2,84 +2,151 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmployeeLeaveData } from "@/types/employee";
 
-const invoices = [
+const employeeLeaveData: EmployeeLeaveData[] = [
   {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
+    no: 1,
+    namaOrNip: "John Doe / 19850101",
+    opd: "Dinas Pendidikan",
+    cutiTahunan: 12,
+    cutiBesar: 0,
+    cutiSakit: 2,
+    cutiMelahirkan: 0,
+    cutiAlasanPenting: 1,
+    cltn: 0,
+    jumlahCuti: 15,
+    lamaCutiHari: 15,
+    sisaCutiHari: 0,
+    keterangan: "Selesai",
   },
   {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
+    no: 2,
+    namaOrNip: "Jane Smith / 19900505",
+    opd: "Dinas Kesehatan",
+    cutiTahunan: 10,
+    cutiBesar: 0,
+    cutiSakit: 3,
+    cutiMelahirkan: 90,
+    cutiAlasanPenting: 0,
+    cltn: 0,
+    jumlahCuti: 103,
+    lamaCutiHari: 103,
+    sisaCutiHari: 2,
+    keterangan: "Aktif",
   },
 ];
 
-export function TableDemo() {
+export function PreviewTable() {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Invoice</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Method</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {invoices.map((invoice) => (
-          <TableRow key={invoice.invoice}>
-            <TableCell className="font-medium">{invoice.invoice}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
-            <TableCell>{invoice.paymentMethod}</TableCell>
-            <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+    <div className="w-full overflow-x-auto">
+      <Table className="min-w-[1200px]">
+        <TableHeader>
+          {/* First Header Row - Main groupings */}
+          <TableRow>
+            <TableHead
+              rowSpan={2}
+              className="text-center border-r align-middle"
+            >
+              No
+            </TableHead>
+            <TableHead
+              rowSpan={2}
+              className="text-center border-r align-middle"
+            >
+              Nama/NIP
+            </TableHead>
+            <TableHead
+              rowSpan={2}
+              className="text-center border-r align-middle"
+            >
+              OPD
+            </TableHead>
+            <TableHead colSpan={6} className="text-center border-r">
+              Jenis Cuti
+            </TableHead>
+            <TableHead
+              rowSpan={2}
+              className="text-center border-r align-middle"
+            >
+              Jumlah Cuti
+            </TableHead>
+            <TableHead
+              rowSpan={2}
+              className="text-center border-r align-middle"
+            >
+              Lama Cuti (Hari)
+            </TableHead>
+            <TableHead
+              rowSpan={2}
+              className="text-center border-r align-middle"
+            >
+              Sisa Cuti (Hari)
+            </TableHead>
+            <TableHead rowSpan={2} className="text-center align-middle">
+              Keterangan
+            </TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-      <TableFooter>
-        <TableRow>
-          <TableCell colSpan={3}>Total</TableCell>
-          <TableCell className="text-right">$2,500.00</TableCell>
-        </TableRow>
-      </TableFooter>
-    </Table>
+          {/* Second Header Row - Sub columns for Jenis Cuti */}
+          <TableRow>
+            <TableHead className="text-center border-r">Cuti Tahunan</TableHead>
+            <TableHead className="text-center border-r">Cuti Besar</TableHead>
+            <TableHead className="text-center border-r">Cuti Sakit</TableHead>
+            <TableHead className="text-center border-r">
+              Cuti Melahirkan
+            </TableHead>
+            <TableHead className="text-center border-r">
+              Cuti Alasan Penting
+            </TableHead>
+            <TableHead className="text-center border-r">CLTN</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {employeeLeaveData.map((employee) => (
+            <TableRow key={employee.no}>
+              <TableCell className="text-center border-r">
+                {employee.no}
+              </TableCell>
+              <TableCell className="border-r">{employee.namaOrNip}</TableCell>
+              <TableCell className="border-r">{employee.opd}</TableCell>
+              <TableCell className="text-center border-r">
+                {employee.cutiTahunan}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.cutiBesar}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.cutiSakit}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.cutiMelahirkan}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.cutiAlasanPenting}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.cltn}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.jumlahCuti}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.lamaCutiHari}
+              </TableCell>
+              <TableCell className="text-center border-r">
+                {employee.sisaCutiHari}
+              </TableCell>
+              <TableCell className="text-center">
+                {employee.keterangan}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

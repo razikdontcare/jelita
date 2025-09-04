@@ -1,7 +1,9 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 // import { createRequire } from 'node:module'
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { parseExcel, getParsedData, clearCache } from "./services/excelParser";
+import { IPC_CHANNELS } from "./types/excel";
 
 // const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -52,6 +54,64 @@ function createWindow() {
   }
 }
 
+// Register IPC handlers for Excel operations
+function registerIpcHandlers() {
+  // Parse Excel file
+  ipcMain.handle(IPC_CHANNELS.EXCEL_PARSE, async (_, filePath: string) => {
+    try {
+      return await parseExcel(filePath);
+    } catch (error) {
+      console.error("Error parsing Excel file:", error);
+      throw error;
+    }
+  });
+
+  // Get parsed data with caching
+  ipcMain.handle(
+    IPC_CHANNELS.EXCEL_GET_PARSED_DATA,
+    async (_, filePath: string) => {
+      try {
+        return await getParsedData(filePath);
+      } catch (error) {
+        console.error("Error getting parsed data:", error);
+        throw error;
+      }
+    }
+  );
+
+  // Clear cache
+  ipcMain.handle(IPC_CHANNELS.EXCEL_CLEAR_CACHE, async () => {
+    try {
+      await clearCache();
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+      throw error;
+    }
+  });
+
+  // Show file dialog to select Excel file
+  ipcMain.handle(IPC_CHANNELS.EXCEL_SELECT_FILE, async () => {
+    try {
+      const result = await dialog.showOpenDialog(win!, {
+        properties: ["openFile"],
+        filters: [
+          { name: "Excel Files", extensions: ["xlsx", "xls"] },
+          { name: "All Files", extensions: ["*"] },
+        ],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      return result.filePaths[0];
+    } catch (error) {
+      console.error("Error selecting file:", error);
+      throw error;
+    }
+  });
+}
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -70,4 +130,7 @@ app.on("activate", () => {
   }
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  registerIpcHandlers();
+  createWindow();
+});
