@@ -1,6 +1,6 @@
 import { useState } from "react";
 import App from "../App";
-import { ExcelTestComponent } from "./ExcelTestComponent";
+import { ImportExcelData } from "./ImportExcelData";
 import { SavedDataPage } from "./SavedDataPage";
 
 export function TabbedApp() {
@@ -52,7 +52,7 @@ export function TabbedApp() {
       <div className="flex-1 bg-gray-50">
         {activeTab === "excel" ? (
           <div className="container mx-auto max-w-full px-6 py-6">
-            <ExcelTestComponent />
+            <ImportExcelData />
           </div>
         ) : activeTab === "saved" ? (
           <SavedDataPage />

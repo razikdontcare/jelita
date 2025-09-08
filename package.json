@@ -1,11 +1,15 @@
 {
-  "name": "jelita",
+  "name": "pelita",
   "private": true,
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:legacy": "set ELECTRON_PATH=./node_modules/electron-legacy/dist/electron.exe && vite",
     "build": "tsc && vite build && electron-builder",
+    "build:legacy": "tsc && vite build && electron-builder --config electron-builder-legacy.json5",
+    "build:legacy:skip-ts": "vite build && electron-builder --config electron-builder-legacy.json5",
+    "build:both": "npm run build && npm run build:legacy",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -37,6 +41,7 @@
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
     "electron": "^30.0.1",
+    "electron-legacy": "npm:electron@22.3.27",
     "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",

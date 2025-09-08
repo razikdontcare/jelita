@@ -1,34 +1,31 @@
 // @see - https://www.electron.build/configuration/configuration
+// Legacy build configuration for Windows 7 compatibility
 {
   $schema: "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   appId: "com.bkpsdm.pelita",
   asar: true,
   productName: "PELITA",
   directories: {
-    output: "release/${version}",
+    output: "release/${version}-legacy",
   },
   files: ["dist", "dist-electron"],
-  mac: {
-    target: ["dmg"],
-    artifactName: "${productName}-Mac-${version}-Installer.${ext}",
-  },
+  electronVersion: "22.3.27",
   win: {
     target: [
       {
         target: "nsis",
-        arch: ["x64"],
+        arch: ["x64", "ia32"], // Include both 64-bit and 32-bit for better Windows 7 compatibility
       },
     ],
-    artifactName: "${productName}-Windows-${version}-Setup.${ext}",
+    artifactName: "${productName}-Windows7-${version}-Setup.${ext}",
   },
   nsis: {
     oneClick: false,
     perMachine: false,
     allowToChangeInstallationDirectory: true,
     deleteAppDataOnUninstall: false,
-  },
-  linux: {
-    target: ["AppImage"],
-    artifactName: "${productName}-Linux-${version}.${ext}",
+    // Additional NSIS options for Windows 7 compatibility
+    displayLanguageSelector: true,
+    installerLanguages: ["en_US"],
   },
 }

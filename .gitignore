@@ -24,4 +24,9 @@ dist-*
 *.sln
 *.sw?
 
+# Build output
 release/
+
+# TypeScript compiled files in source (should not be generated)
+src/**/*.js
+src/**/*.js.map

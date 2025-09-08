@@ -1,17 +1,45 @@
+export interface LeaveTypeData {
+  hakCutiN2: string;
+  hakCutiN1: string;
+  hakCutiN: string;
+  hakCutiTotal: string;
+  sisaCuti: string;
+  lamaCuti: string;
+  tanggalPengajuan?: string;
+  cutiMulai?: string;
+  cutiSelesai?: string;
+  keterangan: string;
+}
+
 export interface EmployeeLeaveData {
   no: number;
+  // Basic employee info
   namaOrNip: string;
+  nama?: string;
+  nip?: string;
+  jabatan?: string;
   opd: string;
-  cutiTahunan: number;
-  cutiBesar: number;
-  cutiSakit: number;
-  cutiMelahirkan: number;
-  cutiAlasanPenting: number;
-  cltn: number;
+
+  // Separate data for each leave type
+  cutiTahunan: LeaveTypeData;
+  cutiBesar: LeaveTypeData;
+  cutiSakit: LeaveTypeData;
+  cutiMelahirkan: LeaveTypeData;
+  cutiAlasanPenting: LeaveTypeData;
+  cltn: LeaveTypeData;
+
+  // Summary fields for display
   jumlahCuti: number;
   lamaCutiHari: number;
   sisaCutiHari: number;
   keterangan: string;
+
+  // Active leave type for current form
+  activeCutiType?: string;
+
+  // Timestamp
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type Employee = {

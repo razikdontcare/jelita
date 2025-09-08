@@ -87,6 +87,9 @@ importers:
       electron-builder:
         specifier: ^24.13.3
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
+      electron-legacy:
+        specifier: npm:electron@22.3.27
+        version: electron@22.3.27
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
@@ -1032,6 +1035,9 @@ packages:
   '@types/node@14.18.63':
     resolution: {integrity: sha512-fAtCfv4jJg+ExtXhvCkCqUKZ+4ok/JQk01qDKhL5BDDoS3AxKXhV5/MAVUZyQnSEd2GT92fkgZl0pz0Q0AzcIQ==}
 
+  '@types/node@16.18.126':
+    resolution: {integrity: sha512-OTcgaiwfGFBKacvfwuHzzn1KLxH/er8mluiy8/uM3sGXHaRe73RrSIj01jow9t4kJEW633Ov+cOexXeiApTyAw==}
+
   '@types/node@20.19.11':
     resolution: {integrity: sha512-uug3FEEGv0r+jrecvUUpbY8lLisvIjg6AAic6a2bSP5OEOLeJsDSnvhCDov7ipFFMXS3orMpzlmi0ZcuGkBbow==}
 
@@ -1525,6 +1531,11 @@ packages:
 
   electron-to-chromium@1.5.213:
     resolution: {integrity: sha512-xr9eRzSLNa4neDO0xVFrkXu3vyIzG4Ay08dApecw42Z1NbmCt+keEpXdvlYGVe0wtvY5dhW0Ay0lY0IOfsCg0Q==}
+
+  electron@22.3.27:
+    resolution: {integrity: sha512-7Rht21vHqj4ZFRnKuZdFqZFsvMBCmDqmjetiMqPtF+TmTBiGne1mnstVXOA/SRGhN2Qy5gY5bznJKpiqogjM8A==}
+    engines: {node: '>= 12.20.55'}
+    hasBin: true
 
   electron@30.5.1:
     resolution: {integrity: sha512-AhL7+mZ8Lg14iaNfoYTkXQ2qee8mmsQyllKdqxlpv/zrKgfxz6jNVtcRRbQtLxtF8yzcImWdfTQROpYiPumdbw==}
@@ -3662,6 +3673,8 @@ snapshots:
 
   '@types/node@14.18.63': {}
 
+  '@types/node@16.18.126': {}
+
   '@types/node@20.19.11':
     dependencies:
       undici-types: 6.21.0
@@ -4281,6 +4294,14 @@ snapshots:
       - supports-color
 
   electron-to-chromium@1.5.213: {}
+
+  electron@22.3.27:
+    dependencies:
+      '@electron/get': 2.0.3
+      '@types/node': 16.18.126
+      extract-zip: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
 
   electron@30.5.1:
     dependencies:

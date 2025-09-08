@@ -6,19 +6,59 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmployeeLeaveData } from "@/types/employee";
+import { EmployeeLeaveData, LeaveTypeData } from "@/types/employee";
+
+// Helper function to create mock leave data
+const createLeaveData = (
+  hakCutiN2: string = "0",
+  hakCutiN1: string = "0",
+  hakCutiN: string = "0",
+  hakCutiTotal: string = "0",
+  sisaCuti: string = "0",
+  lamaCuti: string = "0",
+  keterangan: string = ""
+): LeaveTypeData => ({
+  hakCutiN2,
+  hakCutiN1,
+  hakCutiN,
+  hakCutiTotal,
+  sisaCuti,
+  lamaCuti,
+  keterangan,
+});
+
+// Helper function to get display value for leave count
+const getLeaveCount = (leaveData: LeaveTypeData): number => {
+  return parseInt(leaveData.lamaCuti) || 0;
+};
 
 const employeeLeaveData: EmployeeLeaveData[] = [
   {
     no: 1,
     namaOrNip: "John Doe / 19850101",
     opd: "Dinas Pendidikan",
-    cutiTahunan: 12,
-    cutiBesar: 0,
-    cutiSakit: 2,
-    cutiMelahirkan: 0,
-    cutiAlasanPenting: 1,
-    cltn: 0,
+    cutiTahunan: createLeaveData(
+      "12",
+      "12",
+      "12",
+      "12",
+      "0",
+      "12",
+      "Cuti tahunan selesai"
+    ),
+    cutiBesar: createLeaveData("0", "0", "0", "0", "0", "0", ""),
+    cutiSakit: createLeaveData("2", "2", "2", "2", "0", "2", "Cuti sakit"),
+    cutiMelahirkan: createLeaveData("0", "0", "0", "0", "0", "0", ""),
+    cutiAlasanPenting: createLeaveData(
+      "1",
+      "1",
+      "1",
+      "1",
+      "0",
+      "1",
+      "Alasan keluarga"
+    ),
+    cltn: createLeaveData("0", "0", "0", "0", "0", "0", ""),
     jumlahCuti: 15,
     lamaCutiHari: 15,
     sisaCutiHari: 0,
@@ -28,12 +68,28 @@ const employeeLeaveData: EmployeeLeaveData[] = [
     no: 2,
     namaOrNip: "Jane Smith / 19900505",
     opd: "Dinas Kesehatan",
-    cutiTahunan: 10,
-    cutiBesar: 0,
-    cutiSakit: 3,
-    cutiMelahirkan: 90,
-    cutiAlasanPenting: 0,
-    cltn: 0,
+    cutiTahunan: createLeaveData(
+      "10",
+      "10",
+      "10",
+      "10",
+      "0",
+      "10",
+      "Cuti tahunan"
+    ),
+    cutiBesar: createLeaveData("0", "0", "0", "0", "0", "0", ""),
+    cutiSakit: createLeaveData("3", "3", "3", "3", "0", "3", "Cuti sakit"),
+    cutiMelahirkan: createLeaveData(
+      "90",
+      "90",
+      "90",
+      "90",
+      "0",
+      "90",
+      "Cuti melahirkan"
+    ),
+    cutiAlasanPenting: createLeaveData("0", "0", "0", "0", "0", "0", ""),
+    cltn: createLeaveData("0", "0", "0", "0", "0", "0", ""),
     jumlahCuti: 103,
     lamaCutiHari: 103,
     sisaCutiHari: 2,
@@ -114,22 +170,22 @@ export function PreviewTable() {
               <TableCell className="border-r">{employee.namaOrNip}</TableCell>
               <TableCell className="border-r">{employee.opd}</TableCell>
               <TableCell className="text-center border-r">
-                {employee.cutiTahunan}
+                {getLeaveCount(employee.cutiTahunan)}
               </TableCell>
               <TableCell className="text-center border-r">
-                {employee.cutiBesar}
+                {getLeaveCount(employee.cutiBesar)}
               </TableCell>
               <TableCell className="text-center border-r">
-                {employee.cutiSakit}
+                {getLeaveCount(employee.cutiSakit)}
               </TableCell>
               <TableCell className="text-center border-r">
-                {employee.cutiMelahirkan}
+                {getLeaveCount(employee.cutiMelahirkan)}
               </TableCell>
               <TableCell className="text-center border-r">
-                {employee.cutiAlasanPenting}
+                {getLeaveCount(employee.cutiAlasanPenting)}
               </TableCell>
               <TableCell className="text-center border-r">
-                {employee.cltn}
+                {getLeaveCount(employee.cltn)}
               </TableCell>
               <TableCell className="text-center border-r">
                 {employee.jumlahCuti}

@@ -1,7 +1,54 @@
 import { app, dialog } from "electron";
 import * as ExcelJS from "exceljs";
 import * as path from "path";
-import type { EmployeeLeaveData } from "../../src/types/employee";
+import type {
+  EmployeeLeaveData,
+  LeaveTypeData,
+} from "../../src/types/employee";
+
+// Helper function to get the lama cuti value for a leave type
+const getLeaveTypeValue = (leaveType: LeaveTypeData): number => {
+  return parseInt(leaveType.lamaCuti || "0") || 0;
+};
+
+// Helper function to calculate total used leave days
+const calculateTotalUsedDays = (record: EmployeeLeaveData): number => {
+  const cutiTahunan = getLeaveTypeValue(record.cutiTahunan);
+  const cutiBesar = getLeaveTypeValue(record.cutiBesar);
+  const cutiSakit = getLeaveTypeValue(record.cutiSakit);
+  const cutiMelahirkan = getLeaveTypeValue(record.cutiMelahirkan);
+  const cutiAlasanPenting = getLeaveTypeValue(record.cutiAlasanPenting);
+  const cltn = getLeaveTypeValue(record.cltn);
+
+  return (
+    cutiTahunan +
+    cutiBesar +
+    cutiSakit +
+    cutiMelahirkan +
+    cutiAlasanPenting +
+    cltn
+  );
+};
+
+// Helper function to get active leave type data
+const getActiveLeaveTypeData = (record: EmployeeLeaveData): LeaveTypeData => {
+  switch (record.activeCutiType) {
+    case "cuti_tahunan":
+      return record.cutiTahunan;
+    case "cuti_besar":
+      return record.cutiBesar;
+    case "cuti_sakit":
+      return record.cutiSakit;
+    case "cuti_melahirkan":
+      return record.cutiMelahirkan;
+    case "cuti_alasan_penting":
+      return record.cutiAlasanPenting;
+    case "cltn":
+      return record.cltn;
+    default:
+      return record.cutiTahunan;
+  }
+};
 
 export class ExcelExportService {
   private static instance: ExcelExportService;
@@ -34,36 +81,67 @@ export class ExcelExportService {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Data Cuti");
 
-      // Set up headers with merged cells (similar to preview table)
-      // First row - main headers
-      worksheet.mergeCells("A1:A2"); // No
-      worksheet.mergeCells("B1:B2"); // Nama/NIP
-      worksheet.mergeCells("C1:C2"); // OPD
-      worksheet.mergeCells("D1:I1"); // Jenis Cuti (spans 6 columns)
-      worksheet.mergeCells("J1:J2"); // Jumlah Cuti
-      worksheet.mergeCells("K1:K2"); // Lama Cuti (Hari)
-      worksheet.mergeCells("L1:L2"); // Sisa Cuti (Hari)
-      worksheet.mergeCells("M1:M2"); // Keterangan
+      // Add title header
+      worksheet.mergeCells("A1:M1");
+      worksheet.getCell("A1").value = "REKAPITULASI CUTI ASN";
+      worksheet.getCell("A1").style = {
+        font: { bold: true, size: 14 },
+        alignment: {
+          horizontal: "center" as const,
+          vertical: "middle" as const,
+        },
+      };
+      worksheet.getRow(1).height = 25;
+
+      // Add subtitle header
+      worksheet.mergeCells("A2:M2");
+      worksheet.getCell("A2").value = "PEMERINTAH KOTA MATARAM TAHUN 2025";
+      worksheet.getCell("A2").style = {
+        font: { bold: true, size: 12 },
+        alignment: {
+          horizontal: "center" as const,
+          vertical: "middle" as const,
+        },
+      };
+      worksheet.getRow(2).height = 20;
+
+      // Add separator line (empty row)
+      worksheet.getRow(3).height = 5;
+
+      // Set up table headers with merged cells (starting from row 4)
+      // First header row (row 4) - main headers
+      worksheet.mergeCells("A4:A5"); // No
+      worksheet.mergeCells("B4:B5"); // Nama/NIP
+      worksheet.mergeCells("C4:C5"); // OPD
+      worksheet.mergeCells("D4:I4"); // Jenis Cuti (spans 6 columns)
+      worksheet.mergeCells("J4:J5"); // Jumlah Cuti
+      worksheet.mergeCells("K4:K5"); // Lama Cuti (Hari)
+      worksheet.mergeCells("L4:L5"); // Sisa Cuti (Hari)
+      worksheet.mergeCells("M4:M5"); // Keterangan
 
       // Set main headers
-      worksheet.getCell("A1").value = "No";
-      worksheet.getCell("B1").value = "Nama/NIP";
-      worksheet.getCell("C1").value = "OPD";
-      worksheet.getCell("D1").value = "Jenis Cuti";
-      worksheet.getCell("J1").value = "Jumlah Cuti";
-      worksheet.getCell("K1").value = "Lama Cuti (Hari)";
-      worksheet.getCell("L1").value = "Sisa Cuti (Hari)";
-      worksheet.getCell("M1").value = "Keterangan";
+      worksheet.getCell("A4").value = "No";
+      worksheet.getCell("B4").value = "Nama/NIP";
+      worksheet.getCell("C4").value = "OPD";
+      worksheet.getCell("D4").value = "Jenis Cuti";
+      worksheet.getCell("J4").value = "Jumlah Cuti";
+      worksheet.getCell("K4").value = "Lama Cuti (Hari)";
+      worksheet.getCell("L4").value = "Sisa Cuti (Hari)";
+      worksheet.getCell("M4").value = "Keterangan";
 
-      // Second row - sub headers for Jenis Cuti
-      worksheet.getCell("D2").value = "Cuti Tahunan";
-      worksheet.getCell("E2").value = "Cuti Besar";
-      worksheet.getCell("F2").value = "Cuti Sakit";
-      worksheet.getCell("G2").value = "Cuti Melahirkan";
-      worksheet.getCell("H2").value = "Cuti Alasan Penting";
-      worksheet.getCell("I2").value = "CLTN";
+      // Second header row (row 5) - sub headers for Jenis Cuti
+      worksheet.getCell("D5").value = "Cuti Tahunan";
+      worksheet.getCell("E5").value = "Cuti Besar";
+      worksheet.getCell("F5").value = "Cuti Sakit";
+      worksheet.getCell("G5").value = "Cuti Melahirkan";
+      worksheet.getCell("H5").value = "Cuti Alasan Penting";
+      worksheet.getCell("I5").value = "CLTN";
 
-      // Style headers
+      // Set header row heights
+      worksheet.getRow(4).height = 20;
+      worksheet.getRow(5).height = 20;
+
+      // Style table headers
       const headerStyle: Partial<ExcelJS.Style> = {
         font: { bold: true },
         alignment: {
@@ -76,36 +154,51 @@ export class ExcelExportService {
           bottom: { style: "thin" as const },
           right: { style: "thin" as const },
         },
-        fill: {
-          type: "pattern" as const,
-          pattern: "solid" as const,
-          fgColor: { argb: "FFE6E6FA" },
-        },
+        // fill: {
+        //   type: "pattern" as const,
+        //   pattern: "solid" as const,
+        //   fgColor: { argb: "FFE6E6FA" },
+        // },
       };
 
-      // Apply header styling
+      // Apply header styling to table headers (rows 4 and 5)
       for (let col = 1; col <= 13; col++) {
-        worksheet.getCell(1, col).style = headerStyle;
-        worksheet.getCell(2, col).style = headerStyle;
+        worksheet.getCell(4, col).style = headerStyle;
+        worksheet.getCell(5, col).style = headerStyle;
       }
 
-      // Add data rows
+      // Add data rows (starting from row 6)
       data.forEach((record, index) => {
-        const rowNum = index + 3; // Starting from row 3
+        const rowNum = index + 6; // Starting from row 6
 
         worksheet.getCell(rowNum, 1).value = record.no;
         worksheet.getCell(rowNum, 2).value = record.namaOrNip;
         worksheet.getCell(rowNum, 3).value = record.opd;
-        worksheet.getCell(rowNum, 4).value = record.cutiTahunan;
-        worksheet.getCell(rowNum, 5).value = record.cutiBesar;
-        worksheet.getCell(rowNum, 6).value = record.cutiSakit;
-        worksheet.getCell(rowNum, 7).value = record.cutiMelahirkan;
-        worksheet.getCell(rowNum, 8).value = record.cutiAlasanPenting;
-        worksheet.getCell(rowNum, 9).value = record.cltn;
-        worksheet.getCell(rowNum, 10).value = record.jumlahCuti;
-        worksheet.getCell(rowNum, 11).value = record.lamaCutiHari;
-        worksheet.getCell(rowNum, 12).value = record.sisaCutiHari;
-        worksheet.getCell(rowNum, 13).value = record.keterangan;
+        worksheet.getCell(rowNum, 4).value = getLeaveTypeValue(
+          record.cutiTahunan
+        );
+        worksheet.getCell(rowNum, 5).value = getLeaveTypeValue(
+          record.cutiBesar
+        );
+        worksheet.getCell(rowNum, 6).value = getLeaveTypeValue(
+          record.cutiSakit
+        );
+        worksheet.getCell(rowNum, 7).value = getLeaveTypeValue(
+          record.cutiMelahirkan
+        );
+        worksheet.getCell(rowNum, 8).value = getLeaveTypeValue(
+          record.cutiAlasanPenting
+        );
+        worksheet.getCell(rowNum, 9).value = getLeaveTypeValue(record.cltn);
+        worksheet.getCell(rowNum, 10).value = calculateTotalUsedDays(record);
+        worksheet.getCell(rowNum, 11).value = parseInt(
+          getActiveLeaveTypeData(record).lamaCuti || "0"
+        );
+        worksheet.getCell(rowNum, 12).value = parseInt(
+          getActiveLeaveTypeData(record).sisaCuti || "0"
+        );
+        worksheet.getCell(rowNum, 13).value =
+          getActiveLeaveTypeData(record).keterangan || "";
 
         // Style data rows
         for (let col = 1; col <= 13; col++) {
@@ -124,18 +217,26 @@ export class ExcelExportService {
         }
       });
 
-      // Auto-fit columns
-      worksheet.columns.forEach((column) => {
-        if (column.eachCell) {
-          let maxLength = 0;
-          column.eachCell({ includeEmpty: true }, (cell) => {
-            const cellValue = cell.value ? cell.value.toString() : "";
-            if (cellValue.length > maxLength) {
-              maxLength = cellValue.length;
-            }
-          });
-          column.width = Math.min(Math.max(maxLength + 2, 10), 30);
-        }
+      // Set specific column widths based on header text length + some padding
+      const columnWidths = [
+        { column: 1, width: 4 }, // "No" (2 chars + padding)
+        { column: 2, width: 25 }, // "Nama/NIP" - wider for names
+        { column: 3, width: 20 }, // "OPD" - medium width for org names
+        { column: 4, width: 13 }, // "Cuti Tahunan" (12 chars + padding)
+        { column: 5, width: 11 }, // "Cuti Besar" (10 chars + padding)
+        { column: 6, width: 11 }, // "Cuti Sakit" (10 chars + padding)
+        { column: 7, width: 16 }, // "Cuti Melahirkan" (15 chars + padding)
+        { column: 8, width: 19 }, // "Cuti Alasan Penting" (18 chars + padding)
+        { column: 9, width: 6 }, // "CLTN" (4 chars + padding)
+        { column: 10, width: 12 }, // "Jumlah Cuti" (11 chars + padding)
+        { column: 11, width: 17 }, // "Lama Cuti (Hari)" (16 chars + padding)
+        { column: 12, width: 17 }, // "Sisa Cuti (Hari)" (16 chars + padding)
+        { column: 13, width: 12 }, // "Keterangan" (10 chars + padding)
+      ];
+
+      // Apply column widths
+      columnWidths.forEach(({ column, width }) => {
+        worksheet.getColumn(column).width = width;
       });
 
       // Save the file
